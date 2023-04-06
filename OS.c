@@ -4,25 +4,26 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 void menu(char filename[50])
 {
     printf("%s - ", filename);
     struct stat st;
-    stat(filename, &st);
-    if(S_ISREG(st.st_mode))
+    lstat(filename, &st);
+    if(S_ISLNK(st.st_mode))
     {
-	printf("REGULAR FILE\n");
+	printf("SYMBOLIC LINK\n\n");
     }
     else
     {
-	if(S_ISLNK(st.st_mode))
+	if(S_ISREG(st.st_mode))
 	{
-	    printf("SYMBOLIC LINK\n");
+	    printf("REGULAR FILE\n\n");
 	}
 	else
 	{
-	    printf("INVALID!\n");
+	    printf("OTHER\n\n");
 	}
     }
 
@@ -37,12 +38,14 @@ void menu(char filename[50])
 
 void options(char filename[50])
 {
+    int stop = 0;
+
     struct stat *buffer;
     buffer = malloc(sizeof(struct stat));
 
-    if(stat(filename, buffer) < 0)
+    if(lstat(filename, buffer) < 0)
     {
-	printf("Error: stat\n");
+	printf("Error: lstat\n");
 	exit(2);
     }
 
@@ -51,7 +54,7 @@ void options(char filename[50])
     scanf("%9s", option);
     printf("\n");
 
-    for(int i = 1; i < strlen(option); i++)
+    for(int i = 1; i < strlen(option) && stop == 0; i++)
     {
 	switch(option[i])
 	{
@@ -69,7 +72,14 @@ void options(char filename[50])
 
 	    case 'h':
 	    {
-		printf("Hard link count: %ld\n", (long) buffer->st_nlink);
+		if(S_ISREG(buffer->st_mode))
+		{
+		    printf("Hard link count: %ld\n", (long) buffer->st_nlink);
+		}
+		else
+		{
+		    printf("Not available!\n");
+		}
 		break;
 	    }
 
@@ -88,9 +98,39 @@ void options(char filename[50])
 
 	    case 'l':
 	    {
-		printf("Create symbolic link:\n");
-		createSymbolicLink(filename);
+		if(S_ISREG(buffer->st_mode))
+		{
+		    printf("Create symbolic link:\n");
+		    createSymbolicLink(filename);
+		}
+		else
+		{
+		    if(S_ISLNK(buffer->st_mode))
+		    {
+			printf("Delete symbolic link:\n");
+			deleteSymbolicLink(filename);
+			stop = 1;
+		    }
+		}
 		break;
+	    }
+
+	    case 't':
+	    {
+		if(S_ISLNK(buffer->st_mode))
+		{
+		    struct stat tmp;
+		    if(stat(filename, &tmp) < 0)
+		    {
+			printf("Error: stat!\n");
+			exit(5);
+		    }
+		    printf("Size of target file: %lld\n", (long long) tmp.st_size);
+		}
+		else
+		{
+		    printf("Not available!\n");
+		}
 	    }
 
 	    default:
@@ -132,7 +172,18 @@ void createSymbolicLink(char filename[50])
 	exit(3);
     }
 
-    printf("Created symbolic link!\n%s -> %s\n", nameSL, filename);
+    printf("The symbolic link was created!\n%s -> %s\n", nameSL, filename);
+}
+
+void deleteSymbolicLink(char filename[50])
+{
+    if(unlink(filename) < 0)
+    {
+	printf("Error: unlink!\n");
+	exit(4);
+    }
+
+    printf("The symbolic link was deleted!\n");
 }
 
 int main(int argc, char **argv)
