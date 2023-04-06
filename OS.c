@@ -23,14 +23,46 @@ void menu(char filename[50])
 	}
 	else
 	{
-	    printf("OTHER\n\n");
+	    if(S_ISDIR(st.st_mode))
+	    {
+		printf("DIRECTORY\n\n");
+	    }
+	    else
+	    {
+		printf("OTHER\n\n");
+	    }
 	}
     }
 
     printf("---- MENU ----\n");
-    printf("n: name\n");
-    printf("m: last modif\n");
-    printf("a: access\n");
+
+    if(S_ISREG(st.st_mode))
+    {
+	printf("n: name\n");
+	printf("d: size\n");
+	printf("h: hard link count\n");
+	printf("m: time of last modification\n");
+	printf("a: access rights\n");
+	printf("l: create symbolic link\n");
+    }
+
+    if(S_ISLNK(st.st_mode))
+    {
+	printf("n: name\n");
+	printf("d: size of symbolic link\n");
+	printf("a: access rights\n");
+	printf("l: delete symbolic link\n");
+	printf("t: size of target file\n");
+    }
+
+    if(S_ISDIR(st.st_mode))
+    {
+	printf("n: name\n");
+	printf("d: size\n");
+	printf("a: access rights\n");
+	printf("c: total number of files with the .c extension\n");
+    }
+
     printf("Please enter your options!\n\n");
 
     options(filename);
@@ -85,7 +117,14 @@ void options(char filename[50])
 
 	    case 'm':
 	    {
-		printf("Time of last modification: %s", ctime(&buffer->st_mtime));
+		if(S_ISREG(buffer->st_mode))
+		{
+		    printf("Time of last modification: %s", ctime(&buffer->st_mtime));
+		}
+		else
+		{
+		    printf("Not available!\n");
+		}
 		break;
 	    }
 
@@ -111,6 +150,10 @@ void options(char filename[50])
 			deleteSymbolicLink(filename);
 			stop = 1;
 		    }
+		    else
+		    {
+			printf("Not available!\n");
+		    }
 		}
 		break;
 	    }
@@ -119,18 +162,49 @@ void options(char filename[50])
 	    {
 		if(S_ISLNK(buffer->st_mode))
 		{
-		    struct stat tmp;
-		    if(stat(filename, &tmp) < 0)
+		    struct stat tmp1;
+		    if(stat(filename, &tmp1) < 0)
 		    {
 			printf("Error: stat!\n");
 			exit(5);
 		    }
-		    printf("Size of target file: %lld\n", (long long) tmp.st_size);
+		    printf("Size of target file: %lld\n", (long long) tmp1.st_size);
 		}
 		else
 		{
 		    printf("Not available!\n");
 		}
+	    }
+
+	    case 'c':
+	    {
+		if(S_ISDIR(buffer->st_mode))
+		{
+		    DIR *tmp2 = opendir(filename);
+		    if(tmp2 == NULL)
+		    {
+			printf("Error: opendir!\n");
+			exit(6);
+		    }
+
+		    struct dirent *parse;
+		    parse = readdir(tmp2);
+		    while(parse != NULL)
+		    {
+			printf("")
+		    }
+
+		    if(closedir(tmp2) == -1)
+		    {
+			printf("Error: closedir!\n");
+			exit(7);
+		    }
+		}
+		else
+		{
+		    printf("Not available!\n");
+		}
+		break;
 	    }
 
 	    default:
