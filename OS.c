@@ -191,7 +191,7 @@ void options(char filename[50])
 		    parse = readdir(tmp2);
 		    while(parse != NULL)
 		    {
-			printf("")
+			printf("parse\n");
 		    }
 
 		    if(closedir(tmp2) == -1)
