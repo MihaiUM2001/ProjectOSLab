@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <dirent.h>
 
 void menu(char filename[50])
 {
@@ -87,9 +88,9 @@ void options(char filename[50])
     //Check if the string contains invalid input and if the first character in the string is '-'
     int i = 0;
     int n = strlen(option);
-    for(int i = 0; i < n; i++)
+    for(i = 0; i < n; i++)
     {
-	if(strchr("-acdhlmnt", option[i]) == NULL)
+	if((strchr("-acdhlmnt", option[i]) == NULL) || (option[0] != '-'))
 	{
 	    printf("Incorrect input! Try again: ");
 	    scanf("%9s", option);
@@ -98,6 +99,7 @@ void options(char filename[50])
 	    n = strlen(option);
 	}
     }
+    printf("Options: %s\n\n", option);
 
     int stop = 0;
     for(int i = 1; i < n && stop == 0; i++)
@@ -194,25 +196,37 @@ void options(char filename[50])
 	    {
 		if(S_ISDIR(buffer->st_mode))
 		{
-		    /*DIR *tmp2 = opendir(filename);
+		    DIR *tmp2 = opendir(filename);
 		    if(tmp2 == NULL)
 		    {
 			printf("Error: opendir!\n");
 			exit(6);
 		    }
 
+		    int contr = 0;
+		    char *c;
 		    struct dirent *parse;
 		    parse = readdir(tmp2);
 		    while(parse != NULL)
 		    {
-			printf("parse\n");
+			if(parse->d_type == DT_REG)
+			{
+			    c = strrchr(parse->d_name, '.');
+			    if((c != NULL) && (strcmp(c, ".c") == 0))
+			    {
+				contr++;
+			    }
+			}
+			parse = readdir(tmp2);
 		    }
 
 		    if(closedir(tmp2) == -1)
 		    {
 			printf("Error: closedir!\n");
 			exit(7);
-		    }*/
+		    }
+
+		    printf("Total number of files with the .c extension: %d\n", contr);
 		}
 		else
 		{
