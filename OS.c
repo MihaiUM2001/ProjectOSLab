@@ -11,6 +11,7 @@ void menu(char filename[50])
     printf("%s - ", filename);
     struct stat st;
     lstat(filename, &st);
+
     if(S_ISLNK(st.st_mode))
     {
 	printf("SYMBOLIC LINK\n\n");
@@ -63,30 +64,43 @@ void menu(char filename[50])
 	printf("c: total number of files with the .c extension\n");
     }
 
-    printf("Please enter your options!\n\n");
-
     options(filename);
 }
 
 void options(char filename[50])
 {
-    int stop = 0;
+    printf("Please enter your options!\n\n");
 
     struct stat *buffer;
     buffer = malloc(sizeof(struct stat));
-
     if(lstat(filename, buffer) < 0)
     {
 	printf("Error: lstat\n");
 	exit(2);
     }
 
-    printf("Input the desired options: ");
     char option[10];
+    printf("Input the desired options: ");
     scanf("%9s", option);
     printf("\n");
 
-    for(int i = 1; i < strlen(option) && stop == 0; i++)
+    //Check if the string contains invalid input and if the first character in the string is '-'
+    int i = 0;
+    int n = strlen(option);
+    for(int i = 0; i < n; i++)
+    {
+	if(strchr("-acdhlmnt", option[i]) == NULL)
+	{
+	    printf("Incorrect input! Try again: ");
+	    scanf("%9s", option);
+	    printf("\n");
+	    i = 0;
+	    n = strlen(option);
+	}
+    }
+
+    int stop = 0;
+    for(int i = 1; i < n && stop == 0; i++)
     {
 	switch(option[i])
 	{
@@ -180,7 +194,7 @@ void options(char filename[50])
 	    {
 		if(S_ISDIR(buffer->st_mode))
 		{
-		    DIR *tmp2 = opendir(filename);
+		    /*DIR *tmp2 = opendir(filename);
 		    if(tmp2 == NULL)
 		    {
 			printf("Error: opendir!\n");
@@ -198,7 +212,7 @@ void options(char filename[50])
 		    {
 			printf("Error: closedir!\n");
 			exit(7);
-		    }
+		    }*/
 		}
 		else
 		{
@@ -239,7 +253,6 @@ void createSymbolicLink(char filename[50])
     printf("Input the name of the link: ");
     char nameSL[50];
     scanf("%49s", nameSL);
-
     if(symlink(filename, nameSL) < 0)
     {
 	printf("Error: symlink!\n");
@@ -262,6 +275,7 @@ void deleteSymbolicLink(char filename[50])
 
 int main(int argc, char **argv)
 {
+    //Check if one or more files have ben given as arguments
     if(argc < 2)
     {
 	printf("Error: argc!\n");
