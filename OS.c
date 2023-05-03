@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 void menu(char filename[50])
 {
@@ -16,18 +18,21 @@ void menu(char filename[50])
     if(S_ISLNK(st.st_mode))
     {
 	printf("SYMBOLIC LINK\n\n");
+	optionsLNK(filename);
     }
     else
     {
 	if(S_ISREG(st.st_mode))
 	{
 	    printf("REGULAR FILE\n\n");
+	    optionsREG(filename);
 	}
 	else
 	{
 	    if(S_ISDIR(st.st_mode))
 	    {
 		printf("DIRECTORY\n\n");
+		optionsDIR(filename);
 	    }
 	    else
 	    {
@@ -35,60 +40,20 @@ void menu(char filename[50])
 	    }
 	}
     }
-
-    printf("---- MENU ----\n");
-
-    if(S_ISREG(st.st_mode))
-    {
-	printf("n: name\n");
-	printf("d: size\n");
-	printf("h: hard link count\n");
-	printf("m: time of last modification\n");
-	printf("a: access rights\n");
-	printf("l: create symbolic link\n");
-    }
-
-    if(S_ISLNK(st.st_mode))
-    {
-	printf("n: name\n");
-	printf("d: size of symbolic link\n");
-	printf("a: access rights\n");
-	printf("l: delete symbolic link\n");
-	printf("t: size of target file\n");
-    }
-
-    if(S_ISDIR(st.st_mode))
-    {
-	printf("n: name\n");
-	printf("d: size\n");
-	printf("a: access rights\n");
-	printf("c: total number of files with the .c extension\n");
-    }
-
-    options(filename);
 }
 
-void options(char filename[50])
+char writeOptions
 {
     printf("Please enter your options!\n\n");
-
-    struct stat *buffer;
-    buffer = malloc(sizeof(struct stat));
-    if(lstat(filename, buffer) < 0)
-    {
-	printf("Error: lstat\n");
-	exit(2);
-    }
 
     char option[10];
     printf("Input the desired options: ");
     scanf("%9s", option);
     printf("\n");
 
-    //Check if the string contains invalid input and if the first character in the string is '-'
-    int i = 0;
+    //Check if the strings contains invalid input and if the first character in the string is '-':
     int n = strlen(option);
-    for(i = 0; i < n; i++)
+    for(int i = 0; i < n; i++)
     {
 	if((strchr("-acdhlmnt", option[i]) == NULL) || (option[0] != '-'))
 	{
@@ -100,6 +65,26 @@ void options(char filename[50])
 	}
     }
     printf("Options: %s\n\n", option);
+    //!!!
+}
+
+void optionsREG(char filename[50])
+{
+    printf("---- MENU ----\n");
+    printf("n: name\n");
+    printf("d: size\n");
+    printf("h: hard link counter\n");
+    printf("m: time of last modification\n");
+    printf("a: access rights\n");
+    printf("l: create symbolic link\n");
+
+    struct stat *buffer;
+    buffer = malloc(sizeof(struct stat));
+    if(lstat(filename, buffer) < 0)
+    {
+	printf("Error: lstat\n");
+	exit(0);
+    }
 
     int stop = 0;
     for(int i = 1; i < n && stop == 0; i++)
@@ -126,7 +111,7 @@ void options(char filename[50])
 		}
 		else
 		{
-		    printf("Not available!\n");
+		    printf("Invalid type!\n");
 		}
 		break;
 	    }
@@ -139,7 +124,7 @@ void options(char filename[50])
 		}
 		else
 		{
-		    printf("Not available!\n");
+		    printf("Invalid type!\n");
 		}
 		break;
 	    }
@@ -160,36 +145,142 @@ void options(char filename[50])
 		}
 		else
 		{
-		    if(S_ISLNK(buffer->st_mode))
-		    {
-			printf("Delete symbolic link:\n");
-			deleteSymbolicLink(filename);
-			stop = 1;
-		    }
-		    else
-		    {
-			printf("Not available!\n");
-		    }
+		    printf("Invalid type!\n");
+		}
+		break;
+	    }
+
+	    default:
+	    {
+		printf("Invalid input!\n");
+	    }
+	}
+	printf("\n");
+    }
+}
+
+
+void optionsLNK(char filename[50])
+{
+    printf("---- MENU ----\n");
+    printf("n: name\n");
+    printf("d: size\n");
+    printf("a: access rights\n");
+    printf("l: delete symbolic link\n");
+    printf("t: size of target file\n");
+
+    struct stat *buffer;
+    buffer = malloc(sizeof(struct stat));
+    if(lstat(filename, buffer) < 0)
+    {
+	printf("Error: lstat!\n");
+	exit(0);
+    }
+
+    int stop = 0;
+    for(int i = 1; i < n && stop == 0; i++)
+    {
+	switch(option[i])
+	{
+	    case 'n':
+	    {
+		printf("Name: %s\n", filename);
+		break;
+	    }
+
+	    case 'd':
+	    {
+		printf("Size: %lld\n", (long long) buffer->st_size);
+		break;
+	    }
+
+	    case 'a':
+	    {
+		printf("Access rights:\n");
+		permissions(buffer->st_mode);
+		break;
+	    }
+
+	    case 'l':
+	    {
+		if(S_ISLNK(buffer->st_mode))
+		{
+		    printf("Delete symbolic link:\n");
+		    deleteSymbolicLink(filename);
+		    stop = 1;
+		}
+		else
+		{
+		    printf("Invalid type!\n");
 		}
 		break;
 	    }
 
 	    case 't':
 	    {
-		if(S_ISLNK(buffer->st_mode))
+		if(S_ISLNK(buffer->stmode))
 		{
 		    struct stat tmp1;
 		    if(stat(filename, &tmp1) < 0)
 		    {
 			printf("Error: stat!\n");
-			exit(5);
+			exit(0);
 		    }
 		    printf("Size of target file: %lld\n", (long long) tmp1.st_size);
 		}
 		else
 		{
-		    printf("Not available!\n");
+		    printf("Invalid type!\n");
 		}
+		break;
+	    }
+
+	    default:
+	    {
+		printf("Invalid!\n");
+	    }
+	}
+	printf("\n");
+    }
+}
+
+void optionsDIR(char filename[50])
+{
+    printf("---- MENU ----\n");
+    printf("n: name\n");
+    printf("d: size\n");
+    printf("a: access rights\n");
+    printf("c: total number of files with the '.c' extension\n");
+
+    struct stat *buffer;
+    buffer = malloc(sizeof(struct stat));
+    if(lstat(filename, buffer) < 0)
+    {
+	printf("Error: lstat!\n");
+	exit(0);
+    }
+
+    for(int i = 1; i < n; i++)
+    {
+	switch(option[i])
+	{
+	    case 'n':
+	    {
+		printf("Name: %s\n", filename);
+		break;
+	    }
+
+	    case 'd':
+	    {
+		printf("Size: %lld\n", (long long) buffer->st_size);
+		break;
+	    }
+
+	    case 'a':
+	    {
+		printf("Access rights:\n");
+		permissions(buffer->st_mode);
+		break;
 	    }
 
 	    case 'c':
@@ -200,7 +291,7 @@ void options(char filename[50])
 		    if(tmp2 == NULL)
 		    {
 			printf("Error: opendir!\n");
-			exit(6);
+			exit(0);
 		    }
 
 		    int contr = 0;
@@ -223,14 +314,14 @@ void options(char filename[50])
 		    if(closedir(tmp2) == -1)
 		    {
 			printf("Error: closedir!\n");
-			exit(7);
+			exit(0);
 		    }
 
 		    printf("Total number of files with the .c extension: %d\n", contr);
 		}
 		else
 		{
-		    printf("Not available!\n");
+		    printf("Invalid type!\n");
 		}
 		break;
 	    }
@@ -270,7 +361,7 @@ void createSymbolicLink(char filename[50])
     if(symlink(filename, nameSL) < 0)
     {
 	printf("Error: symlink!\n");
-	exit(3);
+	exit(0);
     }
 
     printf("The symbolic link was created!\n%s -> %s\n", nameSL, filename);
@@ -281,7 +372,7 @@ void deleteSymbolicLink(char filename[50])
     if(unlink(filename) < 0)
     {
 	printf("Error: unlink!\n");
-	exit(4);
+	exit(0);
     }
 
     printf("The symbolic link was deleted!\n");
@@ -289,11 +380,13 @@ void deleteSymbolicLink(char filename[50])
 
 int main(int argc, char **argv)
 {
-    //Check if one or more files have ben given as arguments
+    //Check if one or more files have been given as arguments:
+    int pid;
+
     if(argc < 2)
     {
 	printf("Error: argc!\n");
-	exit(1);
+	exit(0);
     }
     else
     {
@@ -302,5 +395,6 @@ int main(int argc, char **argv)
 	    menu(argv[i]);
 	}
     }
+
     return 0;
 }
