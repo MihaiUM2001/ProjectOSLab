@@ -361,6 +361,23 @@ void optionsDIR(char filename[50])
 
 void secondREG(char filename[50])
 {
+    char *c = strrchr(filename, '.');
+    if((c != NULL) && (strcmp(c, ".c") == 0))//with the '.c' extenstion
+    {
+	printf("The regular file '%s' has the .c extension!\n\n", filename);
+    }
+    else//doesn't have the '.c' extension
+    {
+	printf("The regular file '%s' doesn't have the '.c' extension!\n\n", filename);
+	int n = execl("/bin/wc", "wc", "-l", filename, NULL);
+
+	/*
+	{
+	    printf("Error: execl - wc");
+	    exit(1);
+	}
+	*/
+    }
 }
 
 void secondLNK(char filename[50])
@@ -370,7 +387,7 @@ void secondLNK(char filename[50])
     //0       - Other
     if(execl("/bin/chmod", "chmod", "760", filename, NULL) == -1)
     {
-	printf("Error: execl\n\n");
+	printf("Error: execl - chmod\n\n");
 	exit(1);
     }
 }
@@ -393,6 +410,7 @@ void secondDIR(char filename[50])
     if(fclose(fin))
     {
 	printf("Error: fin - fclose\n\n");
+	exit(1);
     }
 }
 
