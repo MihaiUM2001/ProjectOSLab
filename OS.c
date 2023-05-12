@@ -88,6 +88,10 @@ void writeOptions(char option[10], int type)
     }
 }
 
+void permissions(unsigned short mode);
+void createSymbolicLink(char filename[50]);
+void deleteSymbolicLink(char filename[50]);
+
 void optionsREG(char filename[50])
 {
     printf("---- MENU ----\n");
@@ -355,6 +359,10 @@ void optionsDIR(char filename[50])
     }
 }
 
+void secondREG(char filename[50])
+{
+}
+
 void secondLNK(char filename[50])
 {
 }
@@ -456,7 +464,7 @@ void SP(char filename[50], int ft)
 {
     if(ft == 1)//REG
     {
-	;
+	secondREG(filename);
     }
     else
     {
