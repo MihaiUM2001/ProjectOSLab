@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <dirent.h>
 
-void menu(char filename[50])
+int fileType(char filename[50])
 {
     printf("%s - ", filename);
     struct stat st;
@@ -19,21 +19,21 @@ void menu(char filename[50])
     if(S_ISLNK(st.st_mode))
     {
 	printf("SYMBOLIC LINK\n\n");
-	optionsLNK(filename);
+	return 0;
     }
     else
     {
 	if(S_ISREG(st.st_mode))
 	{
 	    printf("REGULAR FILE\n\n");
-	    optionsREG(filename);
+	    return 1;
 	}
 	else
 	{
 	    if(S_ISDIR(st.st_mode))
 	    {
 		printf("DIRECTORY\n\n");
-		optionsDIR(filename);
+		return 2;
 	    }
 	    else
 	    {
@@ -41,6 +41,7 @@ void menu(char filename[50])
 	    }
 	}
     }
+    return 3;
 }
 
 //!!!
@@ -72,6 +73,7 @@ char writeOptions()
     printf("Options: %s\n\n", option);
     return option;
 }
+//!!!
 
 void optionsREG(char filename[50])
 {
@@ -393,6 +395,29 @@ void deleteSymbolicLink(char filename[50])
     printf("The symbolic link was deleted!\n");
 }
 
+void menu(char filename[50])
+{
+    int ft = fileType(filename);
+    if(ft == 0)
+    {
+	optionsLNK(filename);
+    }
+    else
+    {
+	if(ft == 1)
+	{
+	    optionsREG(filename);
+	}
+	else
+	{
+	    if(ft == 2)
+	    {
+		optionsDIR(filename);
+	    }
+	}
+    }
+}
+
 int main(int argc, char **argv)
 {
     int w1status;
@@ -422,7 +447,7 @@ int main(int argc, char **argv)
 	    pid2 = fork();
 	    if(pid2 == 0)
 	    {
-		menu(argv[i]);
+		
 		exit(1);
 	    }
 
@@ -437,17 +462,6 @@ int main(int argc, char **argv)
 	    {
 		printf("Child process exited; pid = %d; status = %d\n\n", w2, WEXITSTATUS(w2status));
 	    }
-
-	    /*int status;
-	    pid_t waitPID;
-	    for(int i = 0; i < 2; i++)
-	    {
-		waitPID = wait(&status);
-		if(WIFEXITED(status))
-		{
-		    printf("The process with PID %d has ended with the exit code %d\n\n", waitPID, WEXITSTATUS(status));
-		}
-	    }*/
 	}
     }
 
