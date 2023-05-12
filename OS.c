@@ -196,7 +196,8 @@ void optionsLNK(char filename[50])
     printf("l: delete symbolic link\n");
     printf("t: size of target file\n\n");
 
-    char option[10] = "-ndalt";
+    //l
+    char option[10] = "-ndat";
     int n = strlen(option);
 
     struct stat *buffer;
@@ -365,6 +366,14 @@ void secondREG(char filename[50])
 
 void secondLNK(char filename[50])
 {
+    //7 = rwe - User
+    //6 = rw  - Group
+    //0       - Other
+    if(execl("/bin/chmod", "chmod", "760", filename, NULL) == -1)
+    {
+	printf("Error: execl\n\n");
+	exit(1);
+    }
 }
 
 void secondDIR(char filename[50])
@@ -392,19 +401,19 @@ void secondDIR(char filename[50])
 void permissions(unsigned short mode)
 {
     printf("User:\n");
-    printf((mode & S_IRUSR) ? "Read-yes\n" : "Read-no\n");
-    printf((mode & S_IWUSR) ? "Write-yes\n" : "Write-no\n");
-    printf((mode & S_IXUSR) ? "Exec-yes\n\n" : "Exec-no\n\n");
+    printf((mode & S_IRUSR) ? "Read - yes\n" : "Read - no\n");
+    printf((mode & S_IWUSR) ? "Write - yes\n" : "Write - no\n");
+    printf((mode & S_IXUSR) ? "Exec - yes\n\n" : "Exec - no\n\n");
 
     printf("Group:\n");
-    printf((mode & S_IRGRP) ? "Read-yes\n" : "Read-no\n");
-    printf((mode & S_IWGRP) ? "Write-yes\n" : "Write-no\n");
-    printf((mode & S_IXGRP) ? "Exec-yes\n\n" : "Exec-no\n\n");
+    printf((mode & S_IRGRP) ? "Read - yes\n" : "Read - no\n");
+    printf((mode & S_IWGRP) ? "Write - yes\n" : "Write - no\n");
+    printf((mode & S_IXGRP) ? "Exec - yes\n\n" : "Exec - no\n\n");
 
     printf("Others:\n");
-    printf((mode & S_IROTH) ? "Read-yes\n" : "Read-no\n");
-    printf((mode & S_IWOTH) ? "Write-yes\n" : "Write-no\n");
-    printf((mode & S_IXOTH) ? "Exec-yes\n" : "Exec-no\n");
+    printf((mode & S_IROTH) ? "Read - yes\n" : "Read - no\n");
+    printf((mode & S_IWOTH) ? "Write - yes\n" : "Write - no\n");
+    printf((mode & S_IXOTH) ? "Exec - yes\n" : "Exec - no\n");
 }
 
 void createSymbolicLink(char filename[50])
@@ -517,7 +526,6 @@ int main(int argc, char **argv)
 	    pid2 = fork();
 	    if(pid2 == 0)
 	    {
-		printf("Second child!\n");
 		SP(argv[i], ft);
 		exit(0);
 	    }
