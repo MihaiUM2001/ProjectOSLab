@@ -96,7 +96,7 @@ void optionsREG(char filename[50])
     printf("h: hard link counter\n");
     printf("m: time of last modification\n");
     printf("a: access rights\n");
-    printf("l: create symbolic link\n");
+    printf("l: create symbolic link\n\n");
 
     /*char option[10];
     writeOptions(option, 1);
@@ -111,7 +111,7 @@ void optionsREG(char filename[50])
     buffer = malloc(sizeof(struct stat));
     if(lstat(filename, buffer) < 0)
     {
-	printf("Error: lstat\n");
+	printf("Error: lstat\n\n");
 	exit(1);
     }
 
@@ -148,7 +148,7 @@ void optionsREG(char filename[50])
 	    {
 		if(S_ISREG(buffer->st_mode))
 		{
-		    printf("Time of last modification: %s\n", ctime(&buffer->st_mtime));
+		    printf("Time of last modification: %s\n\n", ctime(&buffer->st_mtime));
 		}
 		else
 		{
@@ -159,7 +159,7 @@ void optionsREG(char filename[50])
 
 	    case 'a':
 	    {
-		printf("Access rights:\n");
+		printf("Access rights:\n\n");
 		permissions(buffer->st_mode);
 		printf("\n");
 		break;
@@ -190,7 +190,7 @@ void optionsLNK(char filename[50])
     printf("d: size\n");
     printf("a: access rights\n");
     printf("l: delete symbolic link\n");
-    printf("t: size of target file\n");
+    printf("t: size of target file\n\n");
 
     char option[10] = "-ndalt";
     int n = strlen(option);
@@ -199,7 +199,7 @@ void optionsLNK(char filename[50])
     buffer = malloc(sizeof(struct stat));
     if(lstat(filename, buffer) < 0)
     {
-	printf("Error: lstat\n");
+	printf("Error: lstat\n\n");
 	exit(1);
     }
 
@@ -210,20 +210,21 @@ void optionsLNK(char filename[50])
 	{
 	    case 'n':
 	    {
-		printf("Name: %s\n", filename);
+		printf("Name: %s\n\n", filename);
 		break;
 	    }
 
 	    case 'd':
 	    {
-		printf("Size: %lld\n", (long long) buffer->st_size);
+		printf("Size: %lld\n\n", (long long) buffer->st_size);
 		break;
 	    }
 
 	    case 'a':
 	    {
-		printf("Access rights:\n");
+		printf("Access rights:\n\n");
 		permissions(buffer->st_mode);
+		printf("\n");
 		break;
 	    }
 
@@ -233,11 +234,12 @@ void optionsLNK(char filename[50])
 		{
 		    printf("Delete symbolic link:\n");
 		    deleteSymbolicLink(filename);
+		    printf("\n");
 		    stop = 1;
 		}
 		else
 		{
-		    printf("Invalid type!\n");
+		    printf("Invalid type!\n\n");
 		}
 		break;
 	    }
@@ -249,19 +251,18 @@ void optionsLNK(char filename[50])
 		    struct stat tmp1;
 		    if(stat(filename, &tmp1) < 0)
 		    {
-			printf("Error: stat\n");
+			printf("Error: stat\n\n");
 			exit(1);
 		    }
-		    printf("Size of target file: %lld\n", (long long) tmp1.st_size);
+		    printf("Size of target file: %lld\n\n", (long long) tmp1.st_size);
 		}
 		else
 		{
-		    printf("Invalid type!\n");
+		    printf("Invalid type!\n\n");
 		}
 		break;
 	    }
 	}
-	//printf("\n");
     }
 }
 
@@ -271,7 +272,7 @@ void optionsDIR(char filename[50])
     printf("n: name\n");
     printf("d: size\n");
     printf("a: access rights\n");
-    printf("c: total number of files with the '.c' extension\n");
+    printf("c: total number of files with the '.c' extension\n\n");
 
     char option[10] = "-ndac";
     int n = strlen(option);
@@ -280,7 +281,7 @@ void optionsDIR(char filename[50])
     buffer = malloc(sizeof(struct stat));
     if(lstat(filename, buffer) < 0)
     {
-	printf("Error: lstat\n");
+	printf("Error: lstat\n\n");
 	exit(1);
     }
 
@@ -290,20 +291,21 @@ void optionsDIR(char filename[50])
 	{
 	    case 'n':
 	    {
-		printf("Name: %s\n", filename);
+		printf("Name: %s\n\n", filename);
 		break;
 	    }
 
 	    case 'd':
 	    {
-		printf("Size: %lld\n", (long long) buffer->st_size);
+		printf("Size: %lld\n\n", (long long) buffer->st_size);
 		break;
 	    }
 
 	    case 'a':
 	    {
-		printf("Access rights:\n");
+		printf("Access rights:\n\n");
 		permissions(buffer->st_mode);
+		printf("\n");
 		break;
 	    }
 
@@ -314,7 +316,7 @@ void optionsDIR(char filename[50])
 		    DIR *tmp2 = opendir(filename);
 		    if(tmp2 == NULL)
 		    {
-			printf("Error: opendir\n");
+			printf("Error: opendir\n\n");
 			exit(1);
 		    }
 
@@ -337,20 +339,45 @@ void optionsDIR(char filename[50])
 
 		    if(closedir(tmp2) == -1)
 		    {
-			printf("Error: closedir\n");
+			printf("Error: closedir\n\n");
 			exit(1);
 		    }
 
-		    printf("Total number of files with the .c extension: %d\n", contr);
+		    printf("Total number of files with the .c extension: %d\n\n", contr);
 		}
 		else
 		{
-		    printf("Invalid type!\n");
+		    printf("Invalid type!\n\n");
 		}
 		break;
 	    }
 	}
-	//printf("\n");
+    }
+}
+
+void secondLNK(char filename[50])
+{
+}
+
+void secondDIR(char filename[50])
+{
+    char filenameDIR[100];
+    strcpy(filenameDIR, filename);
+    strcat(filenameDIR, "_file.txt");
+
+    FILE *fin = fopen(filenameDIR, "w");
+    
+    if(fin == NULL)
+    {
+	printf("Error: fin - fopen\n\n");
+	exit(1);
+    }
+
+    printf("The file '%s' was created!\n\n", filenameDIR);
+
+    if(fclose(fin))
+    {
+	printf("Error: fin - fclose\n\n");
     }
 }
 
@@ -359,12 +386,12 @@ void permissions(unsigned short mode)
     printf("User:\n");
     printf((mode & S_IRUSR) ? "Read-yes\n" : "Read-no\n");
     printf((mode & S_IWUSR) ? "Write-yes\n" : "Write-no\n");
-    printf((mode & S_IXUSR) ? "Exec-yes\n" : "Exec-no\n\n");
+    printf((mode & S_IXUSR) ? "Exec-yes\n\n" : "Exec-no\n\n");
 
     printf("Group:\n");
     printf((mode & S_IRGRP) ? "Read-yes\n" : "Read-no\n");
     printf((mode & S_IWGRP) ? "Write-yes\n" : "Write-no\n");
-    printf((mode & S_IXGRP) ? "Exec-yes\n" : "Exec-no\n\n");
+    printf((mode & S_IXGRP) ? "Exec-yes\n\n" : "Exec-no\n\n");
 
     printf("Others:\n");
     printf((mode & S_IROTH) ? "Read-yes\n" : "Read-no\n");
@@ -397,7 +424,8 @@ void deleteSymbolicLink(char filename[50])
     printf("The symbolic link was deleted!\n");
 }
 
-void menu(char filename[50], int ft)
+//First Process
+void FP(char filename[50], int ft)
 {
     if(ft == 0)//LNK
     {
@@ -414,6 +442,33 @@ void menu(char filename[50], int ft)
 	    if(ft == 2)//DIR
 	    {
 		optionsDIR(filename);
+	    }
+	    else//OTHER
+	    {
+		printf("The file '%s' is not a Symbolic Link/Regular File/Directory!\n\n", filename);
+	    }
+	}
+    }
+}
+
+//Second Process
+void SP(char filename[50], int ft)
+{
+    if(ft == 1)//REG
+    {
+	;
+    }
+    else
+    {
+	if(ft == 2)//DIR
+	{
+	    secondDIR(filename);
+	}
+	else
+	{
+	    if(ft == 0)//LNK
+	    {
+		secondLNK(filename);
 	    }
 	    else//OTHER
 	    {
@@ -447,48 +502,16 @@ int main(int argc, char **argv)
 	    pid1 = fork();
 	    if(pid1 == 0)
 	    {
-		menu(argv[i], ft);
-		exit(1);
+		FP(argv[i], ft);
+		exit(0);
 	    }
 
 	    pid2 = fork();
 	    if(pid2 == 0)
 	    {
-		if(ft == 1)//REG
-		{
-		    ;
-		}
-		else
-		{
-		    if(ft == 2)//DIR
-		    {
-			char filenameDIR[strlen(argv[i])+10];
-			strcpy(filenameDIR, argv[i]);
-			strcat(filenameDIR, "_file.txt");
-
-			FILE *fin = fopen(filenameDIR, "w");
-			if(fin == NULL)
-			{
-			    printf("Error: fin - fopen\n\n");
-			}
-			else
-			{
-			    printf("The file '%s' was created!\n\n", filenameDIR);
-			    if(fclose(fin))
-			    {
-				printf("Error: fin - fclose\n\n");
-			    }
-			}
-		    }
-		    else
-		    {
-			if(ft == 0)//LNK
-			{
-			    ;
-			}
-		    }
-		}
-		exit(1);
+		printf("Second child!\n");
+		SP(argv[i], ft);
+		exit(0);
 	    }
 
 	    w1 = waitpid(pid1, &w1status, 0);
