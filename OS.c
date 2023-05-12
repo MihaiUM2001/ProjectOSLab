@@ -16,26 +16,26 @@ int fileType(char filename[50])
     struct stat st;
     lstat(filename, &st);
 
-    if(S_ISLNK(st.st_mode))
+    if(S_ISLNK(st.st_mode))//LNK
     {
 	printf("SYMBOLIC LINK\n\n");
 	return 0;
     }
     else
     {
-	if(S_ISREG(st.st_mode))
+	if(S_ISREG(st.st_mode))//REG
 	{
 	    printf("REGULAR FILE\n\n");
 	    return 1;
 	}
 	else
 	{
-	    if(S_ISDIR(st.st_mode))
+	    if(S_ISDIR(st.st_mode))//DIR
 	    {
 		printf("DIRECTORY\n\n");
 		return 2;
 	    }
-	    else
+	    else//OTHER
 	    {
 		printf("OTHER\n\n");
 	    }
@@ -44,36 +44,49 @@ int fileType(char filename[50])
     return 3;
 }
 
-//!!!
-char writeOptions()
+void writeOptions(char option[10], int type)
 {
-    printf("Please enter your options!\n\n");
+    printf("Please input the desired options: ");
 
-    char option[10];
-    printf("Input the desired options:\n");
-    scanf("%9s", option);
-    printf("\n");
-
-    /*
-    //Check if the strings contains invalid input and if the first character in the string is '-':
+    fgets(option, 11, stdin);
     int n = strlen(option);
-    for(int i = 0; i < n; i++)
+    printf("n = %d\n", n);
+
+    //-acdhlmnt
+    int ok = 1;
+    if(type == 0)//LNK
     {
-	if((strchr("-acdhlmnt", option[i]) == NULL) || (option[0] != '-'))
+	;
+    }
+    else
+    {
+	if(type == 1)//REG
 	{
-	    printf("Incorrect input! Try again: ");
-	    scanf("%9s", option);
-	    printf("\n");
-	    i = 0;
-	    n = strlen(option);
+	    for(int i = 1; i < n; i++)
+	    {
+		if((strchr("adhlmn", option[i]) == NULL) || (option[0] != '-'))
+		{
+		    printf("Incorrect input! Try again: ");
+		    fgets(option, 11, stdin);
+		    n = strlen(option);
+		    printf("n = %d\n", n);
+		    i = 0;
+		}
+	    }
+	}
+	else
+	{
+	    if(type == 2)//DIR
+	    {
+		;
+	    }
+	    else
+	    {
+		printf("Invalid type!\n\n");
+	    }
 	}
     }
-    */
-
-    printf("Options: %s\n\n", option);
-    return option;
 }
-//!!!
 
 void optionsREG(char filename[50])
 {
@@ -85,8 +98,13 @@ void optionsREG(char filename[50])
     printf("a: access rights\n");
     printf("l: create symbolic link\n");
 
+    /*char option[10];
+    writeOptions(option, 1);
+    printf("Options selected: %s\n\n", option);
+    int n = strlen(option);
+    printf("\n");*/
+
     char option[10] = "-ndhmal";
-    //strcpy(option, writeOptions());
     int n = strlen(option);
 
     struct stat *buffer;
@@ -103,13 +121,13 @@ void optionsREG(char filename[50])
 	{
 	    case 'n':
 	    {
-		printf("Name: %s\n", filename);
+		printf("Name: %s\n\n", filename);
 		break;
 	    }
 
 	    case 'd':
 	    {
-		printf("Size: %lld\n", (long long) buffer->st_size);
+		printf("Size: %lld\n\n", (long long) buffer->st_size);
 		break;
 	    }
 
@@ -117,11 +135,11 @@ void optionsREG(char filename[50])
 	    {
 		if(S_ISREG(buffer->st_mode))
 		{
-		    printf("Hard link count: %ld\n", (long) buffer->st_nlink);
+		    printf("Hard link count: %ld\n\n", (long) buffer->st_nlink);
 		}
 		else
 		{
-		    printf("Invalid type!\n");
+		    printf("Invalid type!\n\n");
 		}
 		break;
 	    }
@@ -130,11 +148,11 @@ void optionsREG(char filename[50])
 	    {
 		if(S_ISREG(buffer->st_mode))
 		{
-		    printf("Time of last modification: %s", ctime(&buffer->st_mtime));
+		    printf("Time of last modification: %s\n", ctime(&buffer->st_mtime));
 		}
 		else
 		{
-		    printf("Invalid type!\n");
+		    printf("Invalid type!\n\n");
 		}
 		break;
 	    }
@@ -143,6 +161,7 @@ void optionsREG(char filename[50])
 	    {
 		printf("Access rights:\n");
 		permissions(buffer->st_mode);
+		printf("\n");
 		break;
 	    }
 
@@ -152,20 +171,15 @@ void optionsREG(char filename[50])
 		{
 		    printf("Create symbolic link:\n");
 		    createSymbolicLink(filename);
+		    printf("\n");
 		}
 		else
 		{
-		    printf("Invalid type!\n");
+		    printf("Invalid type!\n\n");
 		}
 		break;
 	    }
-
-	    default:
-	    {
-		printf("Invalid input!\n");
-	    }
 	}
-	printf("\n");
     }
 }
 
@@ -179,14 +193,13 @@ void optionsLNK(char filename[50])
     printf("t: size of target file\n");
 
     char option[10] = "-ndalt";
-    //strcpy(option, wrtieOptions());
     int n = strlen(option);
 
     struct stat *buffer;
     buffer = malloc(sizeof(struct stat));
     if(lstat(filename, buffer) < 0)
     {
-	printf("Error: lstat!\n");
+	printf("Error: lstat\n");
 	exit(1);
     }
 
@@ -236,7 +249,7 @@ void optionsLNK(char filename[50])
 		    struct stat tmp1;
 		    if(stat(filename, &tmp1) < 0)
 		    {
-			printf("Error: stat!\n");
+			printf("Error: stat\n");
 			exit(1);
 		    }
 		    printf("Size of target file: %lld\n", (long long) tmp1.st_size);
@@ -247,13 +260,8 @@ void optionsLNK(char filename[50])
 		}
 		break;
 	    }
-
-	    default:
-	    {
-		printf("Invalid!\n");
-	    }
 	}
-	printf("\n");
+	//printf("\n");
     }
 }
 
@@ -266,14 +274,13 @@ void optionsDIR(char filename[50])
     printf("c: total number of files with the '.c' extension\n");
 
     char option[10] = "-ndac";
-    //strcpy(option, writeOptions());
     int n = strlen(option);
 
     struct stat *buffer;
     buffer = malloc(sizeof(struct stat));
     if(lstat(filename, buffer) < 0)
     {
-	printf("Error: lstat!\n");
+	printf("Error: lstat\n");
 	exit(1);
     }
 
@@ -307,7 +314,7 @@ void optionsDIR(char filename[50])
 		    DIR *tmp2 = opendir(filename);
 		    if(tmp2 == NULL)
 		    {
-			printf("Error: opendir!\n");
+			printf("Error: opendir\n");
 			exit(1);
 		    }
 
@@ -330,7 +337,7 @@ void optionsDIR(char filename[50])
 
 		    if(closedir(tmp2) == -1)
 		    {
-			printf("Error: closedir!\n");
+			printf("Error: closedir\n");
 			exit(1);
 		    }
 
@@ -342,13 +349,8 @@ void optionsDIR(char filename[50])
 		}
 		break;
 	    }
-
-	    default:
-	    {
-		printf("Invalid input!\n");
-	    }
 	}
-	printf("\n");
+	//printf("\n");
     }
 }
 
@@ -377,7 +379,7 @@ void createSymbolicLink(char filename[50])
     scanf("%49s", nameSL);
     if(symlink(filename, nameSL) < 0)
     {
-	printf("Error: symlink!\n");
+	printf("Error: symlink\n");
 	exit(1);
     }
 
@@ -388,31 +390,34 @@ void deleteSymbolicLink(char filename[50])
 {
     if(unlink(filename) < 0)
     {
-	printf("Error: unlink!\n");
+	printf("Error: unlink\n");
 	exit(1);
     }
 
     printf("The symbolic link was deleted!\n");
 }
 
-void menu(char filename[50])
+void menu(char filename[50], int ft)
 {
-    int ft = fileType(filename);
-    if(ft == 0)
+    if(ft == 0)//LNK
     {
 	optionsLNK(filename);
     }
     else
     {
-	if(ft == 1)
+	if(ft == 1)//REG
 	{
 	    optionsREG(filename);
 	}
 	else
 	{
-	    if(ft == 2)
+	    if(ft == 2)//DIR
 	    {
 		optionsDIR(filename);
+	    }
+	    else//OTHER
+	    {
+		printf("The file '%s' is not a Symbolic Link/Regular File/Directory!\n\n", filename);
 	    }
 	}
     }
@@ -430,34 +435,69 @@ int main(int argc, char **argv)
 
     if(argc < 2)
     {
-	printf("Error: argc!\n");
+	printf("Error: argc\n\n");
 	exit(0);
     }
     else
     {
 	for(int i = 1; i < argc; i++)
 	{
+	    int ft = fileType(argv[i]);
+
 	    pid1 = fork();
 	    if(pid1 == 0)
 	    {
-		menu(argv[i]);
+		menu(argv[i], ft);
 		exit(1);
 	    }
 
 	    pid2 = fork();
 	    if(pid2 == 0)
 	    {
-		
+		if(ft == 1)//REG
+		{
+		    ;
+		}
+		else
+		{
+		    if(ft == 2)//DIR
+		    {
+			char filenameDIR[strlen(argv[i])+10];
+			strcpy(filenameDIR, argv[i]);
+			strcat(filenameDIR, "_file.txt");
+
+			FILE *fin = fopen(filenameDIR, "w");
+			if(fin == NULL)
+			{
+			    printf("Error: fin - fopen\n\n");
+			}
+			else
+			{
+			    printf("The file '%s' was created!\n\n", filenameDIR);
+			    if(fclose(fin))
+			    {
+				printf("Error: fin - fclose\n\n");
+			    }
+			}
+		    }
+		    else
+		    {
+			if(ft == 0)//LNK
+			{
+			    ;
+			}
+		    }
+		}
 		exit(1);
 	    }
 
-	    w1 = waitpid(pid1, &w1status, NULL);
+	    w1 = waitpid(pid1, &w1status, 0);
 	    if(WIFEXITED(w1status))
 	    {
 		printf("Child process exited; pid = %d; status = %d\n\n", w1, WEXITSTATUS(w1status));
 	    }
 
-	    w2 = waitpid(pid2, &w2status, NULL);
+	    w2 = waitpid(pid2, &w2status, 0);
 	    if(WIFEXITED(w2status))
 	    {
 		printf("Child process exited; pid = %d; status = %d\n\n", w2, WEXITSTATUS(w2status));
