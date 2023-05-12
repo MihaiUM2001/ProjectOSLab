@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <dirent.h>
 
 void menu(char filename[50])
 {
@@ -42,15 +43,17 @@ void menu(char filename[50])
     }
 }
 
-char writeOptions
+//!!!
+char writeOptions()
 {
     printf("Please enter your options!\n\n");
 
     char option[10];
-    printf("Input the desired options: ");
+    printf("Input the desired options:\n");
     scanf("%9s", option);
     printf("\n");
 
+    /*
     //Check if the strings contains invalid input and if the first character in the string is '-':
     int n = strlen(option);
     for(int i = 0; i < n; i++)
@@ -64,8 +67,10 @@ char writeOptions
 	    n = strlen(option);
 	}
     }
+    */
+
     printf("Options: %s\n\n", option);
-    //!!!
+    return option;
 }
 
 void optionsREG(char filename[50])
@@ -78,16 +83,19 @@ void optionsREG(char filename[50])
     printf("a: access rights\n");
     printf("l: create symbolic link\n");
 
+    char option[10] = "-ndhmal";
+    //strcpy(option, writeOptions());
+    int n = strlen(option);
+
     struct stat *buffer;
     buffer = malloc(sizeof(struct stat));
     if(lstat(filename, buffer) < 0)
     {
 	printf("Error: lstat\n");
-	exit(0);
+	exit(1);
     }
 
-    int stop = 0;
-    for(int i = 1; i < n && stop == 0; i++)
+    for(int i = 1; i < n; i++)
     {
 	switch(option[i])
 	{
@@ -159,7 +167,6 @@ void optionsREG(char filename[50])
     }
 }
 
-
 void optionsLNK(char filename[50])
 {
     printf("---- MENU ----\n");
@@ -169,12 +176,16 @@ void optionsLNK(char filename[50])
     printf("l: delete symbolic link\n");
     printf("t: size of target file\n");
 
+    char option[10] = "-ndalt";
+    //strcpy(option, wrtieOptions());
+    int n = strlen(option);
+
     struct stat *buffer;
     buffer = malloc(sizeof(struct stat));
     if(lstat(filename, buffer) < 0)
     {
 	printf("Error: lstat!\n");
-	exit(0);
+	exit(1);
     }
 
     int stop = 0;
@@ -218,13 +229,13 @@ void optionsLNK(char filename[50])
 
 	    case 't':
 	    {
-		if(S_ISLNK(buffer->stmode))
+		if(S_ISLNK(buffer->st_mode))
 		{
 		    struct stat tmp1;
 		    if(stat(filename, &tmp1) < 0)
 		    {
 			printf("Error: stat!\n");
-			exit(0);
+			exit(1);
 		    }
 		    printf("Size of target file: %lld\n", (long long) tmp1.st_size);
 		}
@@ -252,12 +263,16 @@ void optionsDIR(char filename[50])
     printf("a: access rights\n");
     printf("c: total number of files with the '.c' extension\n");
 
+    char option[10] = "-ndac";
+    //strcpy(option, writeOptions());
+    int n = strlen(option);
+
     struct stat *buffer;
     buffer = malloc(sizeof(struct stat));
     if(lstat(filename, buffer) < 0)
     {
 	printf("Error: lstat!\n");
-	exit(0);
+	exit(1);
     }
 
     for(int i = 1; i < n; i++)
@@ -291,7 +306,7 @@ void optionsDIR(char filename[50])
 		    if(tmp2 == NULL)
 		    {
 			printf("Error: opendir!\n");
-			exit(0);
+			exit(1);
 		    }
 
 		    int contr = 0;
@@ -314,7 +329,7 @@ void optionsDIR(char filename[50])
 		    if(closedir(tmp2) == -1)
 		    {
 			printf("Error: closedir!\n");
-			exit(0);
+			exit(1);
 		    }
 
 		    printf("Total number of files with the .c extension: %d\n", contr);
@@ -355,13 +370,13 @@ void permissions(unsigned short mode)
 
 void createSymbolicLink(char filename[50])
 {
-    printf("Input the name of the link: ");
+    printf("Input the name of the link:\n");
     char nameSL[50];
     scanf("%49s", nameSL);
     if(symlink(filename, nameSL) < 0)
     {
 	printf("Error: symlink!\n");
-	exit(0);
+	exit(1);
     }
 
     printf("The symbolic link was created!\n%s -> %s\n", nameSL, filename);
@@ -372,7 +387,7 @@ void deleteSymbolicLink(char filename[50])
     if(unlink(filename) < 0)
     {
 	printf("Error: unlink!\n");
-	exit(0);
+	exit(1);
     }
 
     printf("The symbolic link was deleted!\n");
@@ -380,8 +395,13 @@ void deleteSymbolicLink(char filename[50])
 
 int main(int argc, char **argv)
 {
-    //Check if one or more files have been given as arguments:
-    int pid;
+    int w1status;
+    pid_t pid1;
+    pid_t w1;
+
+    int w2status;
+    pid_t pid2;
+    pid_t w2;
 
     if(argc < 2)
     {
@@ -392,7 +412,42 @@ int main(int argc, char **argv)
     {
 	for(int i = 1; i < argc; i++)
 	{
-	    menu(argv[i]);
+	    pid1 = fork();
+	    if(pid1 == 0)
+	    {
+		menu(argv[i]);
+		exit(1);
+	    }
+
+	    pid2 = fork();
+	    if(pid2 == 0)
+	    {
+		menu(argv[i]);
+		exit(1);
+	    }
+
+	    w1 = waitpid(pid1, &w1status, NULL);
+	    if(WIFEXITED(w1status))
+	    {
+		printf("Child process exited; pid = %d; status = %d\n\n", w1, WEXITSTATUS(w1status));
+	    }
+
+	    w2 = waitpid(pid2, &w2status, NULL);
+	    if(WIFEXITED(w2status))
+	    {
+		printf("Child process exited; pid = %d; status = %d\n\n", w2, WEXITSTATUS(w2status));
+	    }
+
+	    /*int status;
+	    pid_t waitPID;
+	    for(int i = 0; i < 2; i++)
+	    {
+		waitPID = wait(&status);
+		if(WIFEXITED(status))
+		{
+		    printf("The process with PID %d has ended with the exit code %d\n\n", waitPID, WEXITSTATUS(status));
+		}
+	    }*/
 	}
     }
 
