@@ -173,7 +173,7 @@ void optionsREG(char filename[50])
 	    {
 		if(S_ISREG(buffer->st_mode))
 		{
-		    printf("Create symbolic link:\n");
+		    printf("Create symbolic link:\n\n");
 		    createSymbolicLink(filename);
 		    printf("\n");
 		}
@@ -196,8 +196,7 @@ void optionsLNK(char filename[50])
     printf("l: delete symbolic link\n");
     printf("t: size of target file\n\n");
 
-    //l
-    char option[10] = "-ndat";
+    char option[10] = "-ndalt";
     int n = strlen(option);
 
     struct stat *buffer;
@@ -237,7 +236,7 @@ void optionsLNK(char filename[50])
 	    {
 		if(S_ISLNK(buffer->st_mode))
 		{
-		    printf("Delete symbolic link:\n");
+		    printf("Delete symbolic link:\n\n");
 		    deleteSymbolicLink(filename);
 		    printf("\n");
 		    stop = 1;
@@ -366,7 +365,7 @@ void secondREG(char filename[50])
 
 void secondLNK(char filename[50])
 {
-    //7 = rwe - User
+    //7 = rwx - User
     //6 = rw  - Group
     //0       - Other
     if(execl("/bin/chmod", "chmod", "760", filename, NULL) == -1)
@@ -383,7 +382,6 @@ void secondDIR(char filename[50])
     strcat(filenameDIR, "_file.txt");
 
     FILE *fin = fopen(filenameDIR, "w");
-    
     if(fin == NULL)
     {
 	printf("Error: fin - fopen\n\n");
@@ -418,23 +416,25 @@ void permissions(unsigned short mode)
 
 void createSymbolicLink(char filename[50])
 {
-    printf("Input the name of the link:\n");
+    printf("Input the name of the link: ");
     char nameSL[50];
     scanf("%49s", nameSL);
+    printf("\n");
+
     if(symlink(filename, nameSL) < 0)
     {
-	printf("Error: symlink\n");
+	printf("Error: symlink\n\n");
 	exit(1);
     }
 
-    printf("The symbolic link was created!\n%s -> %s\n", nameSL, filename);
+    printf("The symbolic link '%s -> %s' was created!\n", nameSL, filename);
 }
 
 void deleteSymbolicLink(char filename[50])
 {
     if(unlink(filename) < 0)
     {
-	printf("Error: unlink\n");
+	printf("Error: unlink\n\n");
 	exit(1);
     }
 
