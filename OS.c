@@ -391,10 +391,10 @@ void secondREG(char filename[50])
     {
 	printf("The regular file '%s' has the '.c' extension!\n\n", filename);
 
-	close(fd[0]);
-	dup2(fd[1], 1);
+	/*close(fd[0]);
+	dup2(fd[1], 1);*/
 
-	if(execlp() == -1)
+	if(execlp("./script.sh", "./script.sh", filename, NULL) == -1)
 	{
 	    printf("Error execlp - secondREG\n\n");
 	    exit(1);
