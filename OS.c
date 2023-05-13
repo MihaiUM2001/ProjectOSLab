@@ -405,6 +405,14 @@ void secondREG(char filename[50])
     {
 	printf("The regular file '%s' doesn't have the '.c' extension!\n\n", filename);
 
+	/*
+	if(execl("/bin/wc", "wc", "-l", filename, NULL) == -1)
+	{
+	    printf("Error: execl - wc");
+	    exit(1);
+	}
+	*/
+
 	FILE *finREG = fopen(filename, "r");
 	if(finREG == NULL)
 	{
@@ -631,7 +639,6 @@ int main(int argc, char **argv)
 			char fn[50];//File Name
 			char so[4096];//Script Output
 
-			printf("IM HEREEEEEEEEE!!!!\n\n");
 			close(fd[1]);
 			ReadBinary = read(fd[0], buffer, sizeof(buffer));
 			if(ReadBinary < 0)
@@ -640,7 +647,6 @@ int main(int argc, char **argv)
 			    exit(1);
 			}
 			strcpy(so, buffer);
-			printf("buffer: %s\n", buffer);
 
 			int index = 1;
 			char *t = strtok(so, ",");
@@ -713,7 +719,7 @@ int main(int argc, char **argv)
 			    exit(1);
 			}
 
-			fprintf(fgrade, "%s: %d", fn, score);
+			fprintf(fgrade, "%s %d\n", fn, score);
 
 			if(fclose(fgrade))
 			{
