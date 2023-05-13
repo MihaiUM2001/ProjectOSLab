@@ -44,48 +44,56 @@ int fileType(char filename[50])
     return 3;
 }
 
-void writeOptions(char option[10], int type)
+int checkOptions(char option[10], int type)
 {
-    printf("Please input the desired options: ");
+    int n = (strlen(option) - 1);
 
-    fgets(option, 11, stdin);
-    int n = strlen(option);
-    printf("n = %d\n", n);
+    if(option[0] != '-')
+    {
+	return 0;
+    }
 
     //-acdhlmnt
-    int ok = 1;
-    if(type == 0)//LNK
+    if(type == 0)//LNK --- adlnt
     {
-	;
+	for(int i = 1; i < n; i++)
+	{
+	    if(strchr("adlnt", option[i]) == NULL)
+	    {
+		return 0;
+	    }
+	}
     }
     else
     {
-	if(type == 1)//REG
+	if(type == 1)//REG --- adhlmn
 	{
 	    for(int i = 1; i < n; i++)
 	    {
-		if((strchr("adhlmn", option[i]) == NULL) || (option[0] != '-'))
+		if(strchr("adhlmn", option[i]) == NULL)
 		{
-		    printf("Incorrect input! Try again: ");
-		    fgets(option, 11, stdin);
-		    n = strlen(option);
-		    printf("n = %d\n", n);
-		    i = 0;
+		    return 0;
 		}
 	    }
 	}
 	else
 	{
-	    if(type == 2)//DIR
+	    if(type == 2)//DIR --- acdn
 	    {
-		;
+		for(int i = 1; i < n; i++)
+		if(strchr("acdn", option[i]) == NULL)
+		{
+		    return 0;
+		}
 	    }
 	    else
 	    {
 		printf("Invalid type!\n\n");
+		return 0;
 	    }
 	}
     }
+    return 1;
 }
 
 void permissions(unsigned short mode);
@@ -102,13 +110,14 @@ void optionsREG(char filename[50])
     printf("a: access rights\n");
     printf("l: create symbolic link\n\n");
 
-    /*char option[10];
-    writeOptions(option, 1);
-    printf("Options selected: %s\n\n", option);
-    int n = strlen(option);
-    printf("\n");*/
-
-    char option[10] = "-ndhmal";
+    char option[10];
+    printf("Please input the desired options: ");
+    fgets(option, 10, stdin);
+    while(checkOptions(option, 1) == 0)
+    {
+	printf("Incorrect input! Try again: ");
+	fgets(option, 10, stdin);
+    }
     int n = strlen(option);
 
     struct stat *buffer;
@@ -196,8 +205,14 @@ void optionsLNK(char filename[50])
     printf("l: delete symbolic link\n");
     printf("t: size of target file\n\n");
 
-    //l
-    char option[10] = "-ndat";
+    char option[10];
+    printf("Please input the desired options: ");
+    fgets(option, 10, stdin);
+    while(checkOptions(option, 0) == 0)
+    {
+	printf("Incorrect input! Try again: ");
+	fgets(option, 10, stdin);
+    }
     int n = strlen(option);
 
     struct stat *buffer;
@@ -279,7 +294,14 @@ void optionsDIR(char filename[50])
     printf("a: access rights\n");
     printf("c: total number of files with the '.c' extension\n\n");
 
-    char option[10] = "-ndac";
+    char option[10];
+    printf("Please input the desired options: ");
+    fgets(option, 10, stdin);
+    while(checkOptions(option, 2) == 0)
+    {
+	printf("Incorrect input! Try again: ");
+	fgets(option, 10, stdin);
+    }
     int n = strlen(option);
 
     struct stat *buffer;
@@ -348,7 +370,7 @@ void optionsDIR(char filename[50])
 			exit(1);
 		    }
 
-		    printf("Total number of files with the .c extension: %d\n\n", contr);
+		    printf("Total number of files with the '.c' extension: %d\n\n", contr);
 		}
 		else
 		{
@@ -365,7 +387,7 @@ void secondREG(char filename[50])
     char *c = strrchr(filename, '.');
     if((c != NULL) && (strcmp(c, ".c") == 0))//with the '.c' extenstion
     {
-	printf("The regular file '%s' has the .c extension!\n\n", filename);
+	printf("The regular file '%s' has the '.c' extension!\n\n", filename);
     }
     else//doesn't have the '.c' extension
     {
@@ -419,6 +441,7 @@ void secondLNK(char filename[50])
 	printf("Error: execl - chmod\n\n");
 	exit(1);
     }
+    printf("Permissions of the symbolic link '%s' have been changed!\n\n", filename);
 }
 
 void secondDIR(char filename[50])
