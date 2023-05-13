@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <dirent.h>
 
+int fd[2];
+
 int fileType(char filename[50])
 {
     printf("%s - ", filename);
@@ -575,10 +577,16 @@ int main(int argc, char **argv)
     pid_t pid2;
     pid_t w2;
 
+    if(pipe(fd) < 0)
+    {
+	printf("Error: pipe\n\n");
+	exit(1);
+    }
+
     if(argc < 2)
     {
 	printf("Error: argc\n\n");
-	exit(0);
+	exit(1);
     }
     else
     {
@@ -609,6 +617,16 @@ int main(int argc, char **argv)
 	    w2 = waitpid(pid2, &w2status, 0);
 	    if(WIFEXITED(w2status))
 	    {
+		//REG --- with the '.c' extension
+		if(ft == 1)
+		{
+		    char *c = strrchr(argv[i], '.');
+		    if((c != NULL) && (strcmp(c, ".c") == 0))
+		    {
+			//
+		    }
+		}
+
 		printf("Child process exited; pid = %d; status = %d\n\n", w2, WEXITSTATUS(w2status));
 	    }
 	}
