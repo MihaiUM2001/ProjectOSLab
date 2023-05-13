@@ -196,7 +196,8 @@ void optionsLNK(char filename[50])
     printf("l: delete symbolic link\n");
     printf("t: size of target file\n\n");
 
-    char option[10] = "-ndalt";
+    //l
+    char option[10] = "-ndat";
     int n = strlen(option);
 
     struct stat *buffer;
@@ -369,14 +370,41 @@ void secondREG(char filename[50])
     else//doesn't have the '.c' extension
     {
 	printf("The regular file '%s' doesn't have the '.c' extension!\n\n", filename);
-	int n = execl("/bin/wc", "wc", "-l", filename, NULL);
 
-	/*
+	/*execl("/bin/wc", "wc", "-l", filename, NULL);
+	if(execl(...) == -1)
 	{
 	    printf("Error: execl - wc");
 	    exit(1);
 	}
 	*/
+
+	FILE *finREG = fopen(filename, "r");
+	if(finREG == NULL)
+	{
+	    printf("Error: finREG - fopen\n\n");
+	    exit(1);
+	}
+
+	char c;
+	int contr = 0;
+
+	while(!feof(finREG))
+	{
+	    c = fgetc(finREG);
+	    if((c == '\n') || (c == EOF))
+	    {
+		contr++;
+	    }
+	}
+
+	printf("The regular file '%s' has %d lines!", filename, contr);
+
+	if(fclose(finREG))
+	{
+	    printf("Error: finREG - fclose\n\n");
+	    exit(1);
+	}
     }
 }
 
@@ -385,6 +413,7 @@ void secondLNK(char filename[50])
     //7 = rwx - User
     //6 = rw  - Group
     //0       - Other
+    //if(execl("/bin/chmod", "chmod", "u+rwx,g+rw,g-x,o-rwx",filename, NULL) == -1)
     if(execl("/bin/chmod", "chmod", "760", filename, NULL) == -1)
     {
 	printf("Error: execl - chmod\n\n");
@@ -398,18 +427,18 @@ void secondDIR(char filename[50])
     strcpy(filenameDIR, filename);
     strcat(filenameDIR, "_file.txt");
 
-    FILE *fin = fopen(filenameDIR, "w");
-    if(fin == NULL)
+    FILE *finDIR = fopen(filenameDIR, "w");
+    if(finDIR == NULL)
     {
-	printf("Error: fin - fopen\n\n");
+	printf("Error: finDIR - fopen\n\n");
 	exit(1);
     }
 
     printf("The file '%s' was created!\n\n", filenameDIR);
 
-    if(fclose(fin))
+    if(fclose(finDIR))
     {
-	printf("Error: fin - fclose\n\n");
+	printf("Error: finDIR - fclose\n\n");
 	exit(1);
     }
 }
