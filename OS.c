@@ -390,18 +390,19 @@ void secondREG(char filename[50])
     if((c != NULL) && (strcmp(c, ".c") == 0))//with the '.c' extenstion
     {
 	printf("The regular file '%s' has the '.c' extension!\n\n", filename);
+
+	close(fd[0]);
+	dup2(fd[1], 1);
+
+	if(execlp() == -1)
+	{
+	    printf("Error execlp - secondREG\n\n");
+	    exit(1);
+	}
     }
     else//doesn't have the '.c' extension
     {
 	printf("The regular file '%s' doesn't have the '.c' extension!\n\n", filename);
-
-	/*execl("/bin/wc", "wc", "-l", filename, NULL);
-	if(execl(...) == -1)
-	{
-	    printf("Error: execl - wc");
-	    exit(1);
-	}
-	*/
 
 	FILE *finREG = fopen(filename, "r");
 	if(finREG == NULL)
@@ -441,7 +442,7 @@ void secondLNK(char filename[50])
     //if(execl("/bin/chmod", "chmod", "-v", "u+rwx,g+rw,g-x,o-rwx",filename, NULL) == -1)
     if(execl("/bin/chmod", "chmod", "-v", "760", filename, NULL) == -1)
     {
-	printf("Error: execl - chmod\n\n");
+	printf("Error: execl - chmod - secondLNK\n\n");
 	exit(1);
     }
 }
