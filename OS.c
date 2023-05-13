@@ -11,6 +11,7 @@
 #include <dirent.h>
 
 int fd[2];
+char buffer[4096];
 
 int fileType(char filename[50])
 {
@@ -391,8 +392,8 @@ void secondREG(char filename[50])
     {
 	printf("The regular file '%s' has the '.c' extension!\n\n", filename);
 
-	/*close(fd[0]);
-	dup2(fd[1], 1);*/
+	close(fd[0]);
+	dup2(fd[1], 1);
 
 	if(execlp("./script.sh", "./script.sh", filename, NULL) == -1)
 	{
@@ -624,7 +625,101 @@ int main(int argc, char **argv)
 		    char *c = strrchr(argv[i], '.');
 		    if((c != NULL) && (strcmp(c, ".c") == 0))
 		    {
-			//
+			int ReadBinary;
+			int contrW;//Warining Counter
+			int contrE;//Error Counter
+			char fn[50];//File Name
+			char so[4096];//Script Output
+
+			printf("IM HEREEEEEEEEE!!!!\n\n");
+			close(fd[1]);
+			ReadBinary = read(fd[0], buffer, sizeof(buffer));
+			if(ReadBinary < 0)
+			{
+			    printf("Error: read\n\n");
+			    exit(1);
+			}
+			strcpy(so, buffer);
+			printf("buffer: %s\n", buffer);
+
+			int index = 1;
+			char *t = strtok(so, ",");
+			while(t)
+			{
+			    switch(index)
+			    {
+				case 1:
+				{
+				    contrW = atoi(t);
+				    break;
+				}
+
+				case 2:
+				{
+				    contrE = atoi(t);
+				    break;
+				}
+
+				case 3:
+				{
+				    strcpy(fn, t);
+				    break;
+				}
+
+				default:
+				{
+				    t = NULL;
+				}
+			    }
+			    index++;
+			    t = strtok(NULL, ",");
+			}
+
+			printf("Warnings: %d\n\n", contrW);
+			printf("Errors: %d\n\n", contrE);
+			printf("Filename: %s\n\n", fn);
+
+			int score = 0;
+			if((contrW == 0) && (contrE == 0))
+			{
+			    score = 10;
+			}
+			else
+			{
+			    if(contrE >= 1)
+			    {
+				score = 1;
+			    }
+			    else
+			    {
+				if((contrE == 0) && (contrW > 10))
+				{
+				    score = 2;
+				}
+				else
+				{
+				    if((contrE == 0) && (contrW <= 10))
+				    {
+					score = 2 + 8 * (10 - contrW) / 10;
+				    }
+				}
+			    }
+			}
+
+			FILE *fgrade = fopen("grades.txt", "w");
+			if(fgrade == NULL)
+			{
+			    printf("Error: fgrade - fopen\n\n");
+			    exit(1);
+			}
+
+			fprintf(fgrade, "%s: %d", fn, score);
+
+			if(fclose(fgrade))
+			{
+			    printf("Error: fgrade - fclose\n\n");
+			    exit(1);
+			}
 		    }
 		}
 

@@ -10,4 +10,4 @@ file=$1
 out=$(gcc -Wall -o ${file%.c} $file 2>&1)
 warning=$(echo "$out" | grep "warning:" | wc -l)
 error=$(echo "$out" | grep "error:" | wc -l)
-echo -e "Warnings: $warning, Errors: $error, File: $file"
+echo -e "$warning, $error, $file"
