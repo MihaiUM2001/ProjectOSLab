@@ -432,16 +432,16 @@ void secondREG(char filename[50])
 
 void secondLNK(char filename[50])
 {
+    printf("The permissions for the target file of the symbolic link '%s' will be changed!\n\n", filename);
     //7 = rwx - User
     //6 = rw  - Group
     //0       - Other
-    //if(execl("/bin/chmod", "chmod", "u+rwx,g+rw,g-x,o-rwx",filename, NULL) == -1)
-    if(execl("/bin/chmod", "chmod", "760", filename, NULL) == -1)
+    //if(execl("/bin/chmod", "chmod", "-v", "u+rwx,g+rw,g-x,o-rwx",filename, NULL) == -1)
+    if(execl("/bin/chmod", "chmod", "-v", "760", filename, NULL) == -1)
     {
 	printf("Error: execl - chmod\n\n");
 	exit(1);
     }
-    printf("Permissions of the symbolic link '%s' have been changed!\n\n", filename);
 }
 
 void secondDIR(char filename[50])
